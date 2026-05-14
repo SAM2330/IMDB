@@ -396,8 +396,12 @@ function setupPlayer(item, type) {
 
   playBtn.onclick = () => {
     modal.style.display = "block";
-    // Use vidsrc.xyz for embedding
-    iframe.src = `https://vidsrc.xyz/embed/${type}/${item.id}`;
+    // vidsrc.xyz no longer resolves; see https://vidsrc.me/api/
+    const base = "https://vidsrc-embed.ru/embed";
+    iframe.src =
+      type === "movie"
+        ? `${base}/movie/${item.id}`
+        : `${base}/tv/${item.id}`;
   };
 
   closeBtn.onclick = () => {
