@@ -1,28 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Search - IMDb Clone</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search - StreamFlix</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<header>
-  <div class="logo">IMDb</div>
+  <header>
+    <a href="index.html" class="logo">Stream<span>Flix</span></a>
+    <form id="searchForm">
+      <input type="text" id="searchInput" placeholder="Search movies & shows...">
+      <button type="submit">Search</button>
+    </form>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="watchlist.html">My List</a>
+    </nav>
+  </header>
 
-  <form id="searchForm">
-    <input type="text" id="searchInput" placeholder="Search movies...">
-    <button type="submit">Search</button>
-  </form>
+  <h2 class="page-title">Search Results</h2>
+  <div class="grid" id="searchResults"></div>
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="watchlist.html">Watchlist</a>
-  </nav>
-</header>
-
-<h2 class="page-title">Search Results</h2>
-<div class="grid" id="searchResults"></div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>

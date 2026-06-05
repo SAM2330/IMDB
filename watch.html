@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - StreamFlix</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html" class="logo">Stream<span>Flix</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="watchlist.html">My List</a>
+    </nav>
+  </header>
+
+  <div class="watch-page">
+    <div class="watch-header">
+      <div class="watch-header-inner">
+        <img id="watchPoster" class="watch-poster" alt="">
+        <div class="watch-title-block">
+          <h1 id="watchTitle"></h1>
+          <p id="watchMeta"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="watch-body">
+      <div class="server-select-group">
+        <label for="serverSelect">Streaming Server</label>
+        <select id="serverSelect" class="server-select"></select>
+      </div>
+
+      <!-- TV: season & episode selection -->
+      <div id="tvSection" style="display:none;">
+        <div class="season-tabs" id="seasonTabs"></div>
+        <div class="episode-grid" id="episodeGrid"></div>
+      </div>
+
+      <!-- Movie: play button -->
+      <div id="movieSection" class="movie-play-section" style="display:none;">
+        <button class="btn" id="playMovieBtn">▶ Play Movie</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup Player -->
+  <div id="playerPopup" class="player-popup">
+    <div class="player-popup-header">
+      <div>
+        <div class="player-popup-title" id="popupTitle"></div>
+        <div class="player-popup-meta" id="popupMeta"></div>
+      </div>
+      <div class="player-popup-controls">
+        <select id="popupServerSelect" class="server-select server-select-sm" title="Streaming Server"></select>
+        <button class="ep-nav-btn" id="prevEpisodeBtn">← Prev</button>
+        <button class="ep-nav-btn" id="nextEpisodeBtn">Next →</button>
+        <button class="close-player" id="closePlayerBtn">&times;</button>
+      </div>
+    </div>
+    <div class="player-popup-body">
+      <iframe id="playerIframe" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
