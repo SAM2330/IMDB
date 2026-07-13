@@ -2,7 +2,7 @@ IMDb MovieStream (TMDB API Project)
 
 A simple IMDb-style movie and TV website built with HTML, CSS, and JavaScript using the TMDB API.
 
-🔗 Live Site: streamflix45.netlify.app/
+🔗 Live Site: https://streamflix45.netlify.app/
 
 Features
 
