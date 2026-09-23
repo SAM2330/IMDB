@@ -2,6 +2,7 @@ const TMDB_KEY = "4f232ac1c3f1cf94a52c682491f7fa6e";
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
+const SITE_ORIGIN = "https://streamflix.pro.et";
 
 const STREAMING_SERVERS = {
   vidsrc: {
@@ -89,6 +90,92 @@ function getTitle(item) {
   return item.title || item.name || "Unknown";
 }
 
+function getYear(item) {
+  return item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || "";
+}
+
+function getPosterUrl(item) {
+  return item.poster_path
+    ? `${IMG_BASE}${item.poster_path}`
+    : "https://via.placeholder.com/300x450";
+}
+
+function getDetailPageUrl(id, type) {
+  return `movie.html?id=${encodeURIComponent(id)}&type=${encodeURIComponent(type)}`;
+}
+
+function getMetaDescription(item) {
+  const title = getTitle(item);
+  const overview = item.overview?.trim();
+  if (!overview) return `Watch ${title} details, trailer, cast, rating, and streaming options on StreamFlix.`;
+  return overview.length > 155 ? `${overview.slice(0, 152).trim()}...` : overview;
+}
+
+function getCanonicalUrl(id, type) {
+  return `${SITE_ORIGIN}/${getDetailPageUrl(id, type)}`;
+}
+
+function setMetaContent(selector, content, attr = "content") {
+  const el = document.querySelector(selector);
+  if (el) el.setAttribute(attr, content || "");
+}
+
+function updateMovieSeo(item, type, id) {
+  const title = getTitle(item);
+  const year = getYear(item);
+  const pageTitle = `${title}${year ? ` (${year})` : ""} - StreamFlix`;
+  const description = getMetaDescription(item);
+  const canonicalUrl = getCanonicalUrl(id, type);
+  const imageUrl = item.poster_path
+    ? `${IMG_BASE}${item.poster_path}`
+    : item.backdrop_path
+      ? `${BACKDROP_BASE}${item.backdrop_path}`
+      : "";
+
+  document.title = pageTitle;
+  setMetaContent("#pageDescription", description);
+  setMetaContent("#canonicalUrl", canonicalUrl, "href");
+  setMetaContent("#ogTitle", pageTitle);
+  setMetaContent("#ogDescription", description);
+  setMetaContent("#ogUrl", canonicalUrl);
+  setMetaContent("#ogImage", imageUrl);
+  setMetaContent('meta[property="og:type"]', type === "tv" ? "video.tv_show" : "video.movie");
+  updateStructuredData(item, type, imageUrl);
+}
+
+function updateStructuredData(item, type, imageUrl) {
+  let script = document.getElementById("structuredData");
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "structuredData";
+    document.head.appendChild(script);
+  }
+
+  const releaseDate = item.release_date || item.first_air_date;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": type === "tv" ? "TVSeries" : "Movie",
+    name: getTitle(item)
+  };
+
+  if (item.overview) structuredData.description = item.overview;
+  if (imageUrl) structuredData.image = imageUrl;
+  if (releaseDate) structuredData.datePublished = releaseDate;
+
+  if (item.vote_average > 0 && item.vote_count > 0) {
+    structuredData.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: Number(item.vote_average.toFixed(1)),
+      ratingCount: item.vote_count,
+      bestRating: 10,
+      worstRating: 0
+    };
+  }
+
+  script.textContent = JSON.stringify(structuredData);
+}
+
 function buildEmbedUrl(server, type, id, season, episode) {
   const srv = STREAMING_SERVERS[server] || STREAMING_SERVERS.vidsrc;
   return type === "movie"
@@ -97,22 +184,20 @@ function buildEmbedUrl(server, type, id, season, episode) {
 }
 
 function createMovieCard(item) {
-  const card = document.createElement("div");
+  const type = getMediaType(item);
+  const title = getTitle(item);
+  const card = document.createElement("a");
   card.className = "movie-card";
+  card.href = getDetailPageUrl(item.id, type);
 
   const poster = item.poster_path
     ? `${IMG_BASE}${item.poster_path}`
     : "https://via.placeholder.com/300x450?text=No+Image";
 
   card.innerHTML = `
-    <img src="${poster}" alt="${getTitle(item)}">
-    <h3>${getTitle(item)}</h3>
+    <img src="${poster}" alt="${title} poster">
+    <h3>${title}</h3>
   `;
-
-  card.onclick = () => {
-    const type = getMediaType(item);
-    window.location.href = `movie.html?id=${item.id}&type=${type}`;
-  };
 
   return card;
 }
@@ -155,7 +240,7 @@ async function loadHeroBanner() {
   };
 
   heroInfoBtn.onclick = () => {
-    window.location.href = `movie.html?id=${featured.id}&type=${type}`;
+    window.location.href = getDetailPageUrl(featured.id, type);
   };
 }
 
@@ -173,23 +258,22 @@ async function loadTop10() {
 
   top10.forEach((item, index) => {
     if (index < 3) {
-      const card = document.createElement("div");
+      const type = getMediaType(item);
+      const title = getTitle(item);
+      const card = document.createElement("a");
       card.className = "top3-card";
+      card.href = getDetailPageUrl(item.id, type);
       const poster = item.poster_path
         ? `${IMG_BASE}${item.poster_path}`
         : "https://via.placeholder.com/300x450";
 
       card.innerHTML = `
-        <img src="${poster}" alt="${getTitle(item)}">
+        <img src="${poster}" alt="${title} poster">
         <div class="top3-info">
-          <h3>#${index + 1} ${getTitle(item)}</h3>
+          <h3>#${index + 1} ${title}</h3>
           <p>${item.overview || ""}</p>
         </div>
       `;
-
-      card.onclick = () => {
-        window.location.href = `movie.html?id=${item.id}&type=${getMediaType(item)}`;
-      };
 
       top3Container.appendChild(card);
     } else {
@@ -258,20 +342,23 @@ async function loadMovieDetails() {
   if (!res.ok) return;
 
   const item = await res.json();
+  const title = getTitle(item);
+  const year = getYear(item);
+  const poster = getPosterUrl(item);
+  updateMovieSeo(item, type, id);
 
   const backdrop = document.getElementById("detailBackdrop");
   if (backdrop && item.backdrop_path) {
     backdrop.style.backgroundImage = `url(${BACKDROP_BASE}${item.backdrop_path})`;
   }
 
-  document.getElementById("moviePoster").src = item.poster_path
-    ? `${IMG_BASE}${item.poster_path}`
-    : "https://via.placeholder.com/300x450";
+  const posterEl = document.getElementById("moviePoster");
+  posterEl.src = poster;
+  posterEl.alt = `${title} poster`;
 
-  document.getElementById("movieTitle").textContent = getTitle(item);
+  document.getElementById("movieTitle").textContent = title;
 
-  document.getElementById("movieYear").textContent =
-    item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || "N/A";
+  document.getElementById("movieYear").textContent = year || "N/A";
 
   document.getElementById("movieRating").textContent = item.vote_average?.toFixed(1) ?? "N/A";
 
@@ -331,14 +418,15 @@ async function loadWatchPage() {
 
   const item = await res.json();
   watchState.item = item;
+  const title = getTitle(item);
 
-  document.getElementById("watchPoster").src = item.poster_path
-    ? `${IMG_BASE}${item.poster_path}`
-    : "https://via.placeholder.com/300x450";
+  const watchPoster = document.getElementById("watchPoster");
+  watchPoster.src = getPosterUrl(item);
+  watchPoster.alt = `${title} poster`;
 
-  document.getElementById("watchTitle").textContent = getTitle(item);
+  document.getElementById("watchTitle").textContent = title;
 
-  const year = item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4) || "";
+  const year = getYear(item);
   const meta = type === "tv"
     ? `${year} · ${item.number_of_seasons} Seasons · ★ ${item.vote_average?.toFixed(1)}`
     : `${year} · ${item.runtime ? item.runtime + " min" : ""} · ★ ${item.vote_average?.toFixed(1)}`;
@@ -589,7 +677,7 @@ function loadWatchlist() {
       : "https://via.placeholder.com/300x450";
 
     card.innerHTML = `
-      <img src="${poster}" alt="${getTitle(movie)}">
+      <img src="${poster}" alt="${getTitle(movie)} poster">
       <h3>${getTitle(movie)}</h3>
       <button class="remove-btn">Remove</button>
     `;

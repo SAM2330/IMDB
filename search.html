@@ -14,6 +14,9 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Search StreamFlix for movies and TV shows.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://streamflix.pro.et/search.html">
   <title>Search - StreamFlix</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -23,7 +26,7 @@
   <header>
     <a href="index.html" class="logo">Stream<span>Flix</span></a>
     <form id="searchForm">
-      <input type="text" id="searchInput" placeholder="Search movies & shows...">
+      <input type="text" id="searchInput" placeholder="Search movies & shows..." aria-label="Search movies and shows">
       <button type="submit">Search</button>
     </form>
     <nav>
@@ -32,7 +35,7 @@
     </nav>
   </header>
 
-  <h2 class="page-title">Search Results</h2>
+  <h1 class="page-title">Search Results</h1>
   <div class="grid" id="searchResults"></div>
 
   <script src="script.js"></script>

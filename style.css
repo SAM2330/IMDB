@@ -245,7 +245,10 @@ section h2 {
 }
 
 .movie-card {
+  display: block;
+  color: inherit;
   cursor: pointer;
+  text-decoration: none;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   min-width: 160px;
   position: relative;
@@ -326,8 +329,10 @@ section h2 {
 }
 
 .top3-card {
+  color: inherit;
   display: flex;
   gap: 16px;
+  text-decoration: none;
   background: var(--bg-card);
   padding: 16px;
   border-radius: var(--radius);
