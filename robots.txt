@@ -1,0 +1,10 @@
+# ==============================================================================
+# StreamFlix - robots.txt
+# Live Domain: https://streamflix.pro.et
+# ==============================================================================
+
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://streamflix.pro.et/sitemap.xml
