@@ -5,6 +5,7 @@
 
 User-agent: *
 Allow: /
+Disallow:
 
 # Sitemap Location
 Sitemap: https://streamflix.pro.et/sitemap.xml
