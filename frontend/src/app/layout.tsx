@@ -11,8 +11,10 @@ const inter = Inter({
   display: "swap"
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "StreamFlix - Watch Movies & TV Shows Online",
     template: "%s - StreamFlix"
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "StreamFlix - Watch Movies & TV Shows Online",
     description: "Discover trending movies, TV shows, fan favorites, and genre collections on StreamFlix.",
-    url: "https://streamflix.pro.et/",
+    url: siteUrl,
     siteName: "StreamFlix",
     type: "website"
   },
@@ -50,7 +52,15 @@ export default function RootLayout({
     "@type": "WebSite",
     "name": "StreamFlix",
     "alternateName": "StreamFlix",
-    "url": "https://streamflix.pro.et/"
+    "url": siteUrl,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${siteUrl}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
   };
 
   return (
