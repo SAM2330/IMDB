@@ -1,0 +1,58 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MediaType {
+  MOVIE
+  TV
+}
+
+model User {
+  id          String          @id @default(uuid())
+  email       String?         @unique
+  name        String?
+  preferences Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  watchlist   WatchlistItem[]
+
+  @@map("users")
+}
+
+model MediaItem {
+  id            Int             @id // TMDB ID
+  mediaType     MediaType
+  title         String
+  overview      String?
+  posterPath    String?
+  backdropPath  String?
+  releaseDate   String?
+  voteAverage   Float?
+  voteCount     Int?
+  genres        Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  watchlistRefs WatchlistItem[]
+
+  @@unique([id, mediaType])
+  @@map("media_items")
+}
+
+model WatchlistItem {
+  id        String    @id @default(uuid())
+  userId    String
+  mediaId   Int
+  mediaType MediaType
+  addedAt   DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaItem MediaItem @relation(fields: [mediaId, mediaType], references: [id, mediaType], onDelete: Cascade)
+
+  @@unique([userId, mediaId, mediaType])
+  @@index([userId])
+  @@map("watchlist_items")
+}

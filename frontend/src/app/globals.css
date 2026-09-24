@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #141414;
+  --bg-elevated: #1f1f1f;
+  --accent: #e50914;
+  --accent-hover: #f40612;
+  --gold: #f5c518;
+  --text: #ffffff;
+  --text-muted: #b3b3b3;
+  --border: #333333;
+  --radius: 8px;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', Arial, sans-serif;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide scrollbars for carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--accent);
+  color: #ffffff;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-gold {
+  background-color: var(--gold);
+  color: #000000;
+}
+
+.btn-gold:hover {
+  background-color: #e6b800;
+}
+
+/* Glassmorphic header */
+.header-glass {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
+  transition: background 0.3s, backdrop-filter 0.3s;
+}
+
+.header-scrolled {
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(12px);
+}
