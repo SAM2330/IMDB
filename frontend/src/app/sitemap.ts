@@ -18,20 +18,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const curatedCatalog = await mediaApi.getCuratedCatalog();
 
-    const mediaEntries: MetadataRoute.Sitemap = curatedCatalog.map((item) => {
-      const slug = slugify(item.title || "details");
-      const url = `${siteUrl}/${item.media_type}/${item.id}/${slug}`;
-      return {
-        url,
-        lastModified: item.releaseDate || currentDate,
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      };
-    });
+    if (Array.isArray(curatedCatalog)) {
+      const mediaEntries: MetadataRoute.Sitemap = curatedCatalog.map((item) => {
+        const slug = slugify(item.title || "details");
+        const url = `${siteUrl}/${item.media_type}/${item.id}/${slug}`;
+        return {
+          url,
+          lastModified: item.releaseDate || currentDate,
+          changeFrequency: "weekly" as const,
+          priority: 0.8,
+        };
+      });
 
-    return [...staticEntries, ...mediaEntries];
-  } catch (err) {
-    console.error("Error generating sitemap:", err);
-    return staticEntries;
+      return [...staticEntries, ...mediaEntries];
+    }
+  } catch {
+    // If backend is not reached during static generation, return static homepage entry safely
   }
+
+  return staticEntries;
 }

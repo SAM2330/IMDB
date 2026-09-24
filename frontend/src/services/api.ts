@@ -6,10 +6,19 @@ import {
   TMDBSeasonDetail
 } from "../types/tmdb";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function getApiBaseUrl(): string {
+  let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  url = url.trim().replace(/\/+$/, "");
+  if (!url.endsWith("/api")) {
+    url = `${url}/api`;
+  }
+  return url;
+}
 
 async function fetchFromBackend<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE}${endpoint}`;
+  const apiBase = getApiBaseUrl();
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${apiBase}${cleanEndpoint}`;
   
   const res = await fetch(url, {
     ...options,
