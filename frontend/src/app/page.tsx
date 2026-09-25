@@ -5,7 +5,7 @@ import { MovieCard } from "../components/media/MovieCard";
 import { MediaCarousel } from "../components/media/MediaCarousel";
 import { TMDBMediaItem } from "../types/tmdb";
 
-export const revalidate = 3600; // ISR revalidate every hour
+export const dynamic = "force-dynamic"; // Always fetch fresh data on request at runtime
 
 export default async function HomePage() {
   let trending: TMDBMediaItem[] = [];

@@ -26,8 +26,9 @@ export class MediaController {
   static async getFanFavorites(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await TMDBService.getTrendingAllWeek();
+      const results = data?.results || [];
       // Filter items with vote_count > 500 matching the original logic
-      const fanFavorites = data.results.filter(item => (item.vote_count || 0) > 500);
+      const fanFavorites = results.filter(item => (item.vote_count || 0) > 500);
       res.json({
         ...data,
         results: fanFavorites
@@ -51,10 +52,14 @@ export class MediaController {
       let data;
       if (type === "tv") {
         data = await TMDBService.getTVByGenre(parsedGenreId, page);
-        data.results = data.results.map(r => ({ ...r, media_type: "tv" as const }));
+        if (data?.results) {
+          data.results = data.results.map(r => ({ ...r, media_type: "tv" as const }));
+        }
       } else {
         data = await TMDBService.getMoviesByGenre(parsedGenreId, page);
-        data.results = data.results.map(r => ({ ...r, media_type: "movie" as const }));
+        if (data?.results) {
+          data.results = data.results.map(r => ({ ...r, media_type: "movie" as const }));
+        }
       }
 
       res.json(data);

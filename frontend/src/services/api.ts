@@ -27,8 +27,9 @@ async function fetchFromBackend<T>(endpoint: string, options: RequestInit = {}):
       ...(options.headers || {})
     },
     // Next.js caching options
-    next: { revalidate: 3600 }
+    next: { revalidate: 60 }
   });
+
 
   if (!res.ok) {
     throw new Error(`API Error: ${res.status} ${res.statusText}`);

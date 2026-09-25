@@ -7,6 +7,9 @@ import apiRoutes from "./routes/api.js";
 
 const app = express();
 
+// Trust reverse proxy (Render, Cloudflare, Load Balancers) for accurate IP resolution in rate limiter
+app.set("trust proxy", 1);
+
 // Security and CORS configuration
 app.use(
   cors({
