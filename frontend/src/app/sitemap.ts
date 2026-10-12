@@ -3,17 +3,41 @@ import { mediaApi } from "../services/api";
 import { slugify } from "../utils/slug";
 
 function parseValidDate(dateStr?: string | null): Date {
-  if (!dateStr || typeof dateStr !== "string") return new Date();
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? new Date() : parsed;
+  const now = new Date();
+  if (!dateStr || typeof dateStr !== "string") return now;
+
+  const trimmed = dateStr.trim();
+  // Filter out dummy/placeholder values like '0000-00-00' or non-dates
+  if (
+    !trimmed ||
+    trimmed.startsWith("0000") ||
+    trimmed.toLowerCase() === "undefined" ||
+    trimmed.toLowerCase() === "null"
+  ) {
+    return now;
+  }
+
+  const parsed = new Date(trimmed);
+  // Ensure valid date timestamp and reasonable range (after 1900)
+  if (isNaN(parsed.getTime()) || parsed.getTime() < new Date("1900-01-01").getTime()) {
+    return now;
+  }
+
+  // Google Search Console rejects sitemaps with "Invalid date" if lastmod is in the future.
+  // Upcoming movies/TV shows from TMDB trending/popular have future release dates.
+  if (parsed.getTime() > now.getTime()) {
+    return now;
+  }
+
+  return parsed;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et").replace(/\/+$/, "");
 
   const staticEntries: MetadataRoute.Sitemap = [
     {
-      url: `${siteUrl}/`,
+      url: `${siteUrl}`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
