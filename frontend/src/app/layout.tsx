@@ -16,11 +16,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "StreamFlix - Watch Movies & TV Shows Online",
+    default: "StreamFlix - Watch Movies & TV Series Online",
     template: "%s - StreamFlix"
   },
   description:
     "Watch movies, TV shows, and favorite series on StreamFlix with trending titles, fan favorites, genre collections, and multiple streaming server choices.",
+  alternates: {
+    canonical: siteUrl,
+  },
   robots: {
     index: true,
     follow: true
@@ -29,16 +32,25 @@ export const metadata: Metadata = {
     icon: "/favicon-96x96.png"
   },
   openGraph: {
-    title: "StreamFlix - Watch Movies & TV Shows Online",
+    title: "StreamFlix - Watch Movies & TV Series Online",
     description: "Discover trending movies, TV shows, fan favorites, and genre collections on StreamFlix.",
     url: siteUrl,
     siteName: "StreamFlix",
+    images: [
+      {
+        url: `${siteUrl}/favicon-96x96.png`,
+        width: 96,
+        height: 96,
+        alt: "StreamFlix"
+      }
+    ],
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "StreamFlix - Watch Movies & TV Shows Online",
-    description: "Discover trending movies, TV shows, fan favorites, and genre collections on StreamFlix."
+    title: "StreamFlix - Watch Movies & TV Series Online",
+    description: "Discover trending movies, TV shows, fan favorites, and genre collections on StreamFlix.",
+    images: [`${siteUrl}/favicon-96x96.png`]
   }
 };
 

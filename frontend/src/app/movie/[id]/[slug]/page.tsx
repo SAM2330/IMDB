@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
     const movie = await mediaApi.getMovieDetails(id);
     const title = movie.title || "Movie";
     const year = movie.release_date?.slice(0, 4) ? ` (${movie.release_date.slice(0, 4)})` : "";
-    const pageTitle = `${title}${year}`;
+    const pageTitle = `Watch ${title}${year} Online in HD`;
     const description =
       movie.overview?.trim()
         ? movie.overview.length > 155

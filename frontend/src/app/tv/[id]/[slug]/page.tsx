@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: TVPageProps): Promise<Metadat
     const show = await mediaApi.getTVDetails(id);
     const title = show.name || "Series";
     const year = show.first_air_date?.slice(0, 4) ? ` (${show.first_air_date.slice(0, 4)})` : "";
-    const pageTitle = `${title}${year}`;
+    const pageTitle = `Watch ${title}${year} Series Online`;
     const description =
       show.overview?.trim()
         ? show.overview.length > 155

@@ -95,6 +95,19 @@ export default async function HomePage() {
       <MediaCarousel title="Sci-Fi Series" items={scifiTV} />
       <MediaCarousel title="Crime Series" items={crimeTV} />
       <MediaCarousel title="Mystery Series" items={mysteryTV} />
+
+      {/* SEO Content Section */}
+      <section className="max-w-6xl mx-auto px-5 md:px-10 mt-14 pt-10 border-t border-white/10 text-[#888] text-sm leading-relaxed space-y-4">
+        <h2 className="text-lg md:text-xl font-semibold text-[#e5e5e5]">
+          Stream Movies and TV Series Online on StreamFlix
+        </h2>
+        <p>
+          StreamFlix is your online destination for discovering and streaming trending movies, critically acclaimed TV shows, and top-rated series in high definition. Explore our curated collections spanning action blockbusters, thrilling crime dramas, laugh-out-loud comedies, and immersive sci-fi adventures. With comprehensive details including cast information, official trailers, release dates, and community ratings powered by TMDB, finding your next watch has never been easier.
+        </p>
+        <p>
+          Whether you are catching up on this week&apos;s hottest releases or diving into timeless fan favorites, StreamFlix offers fast streaming servers, personalized watchlists, and seamless playback across all your devices. Bookmark your favorite titles to build your watchlist and stay updated with the latest cinema entertainment.
+        </p>
+      </section>
     </div>
   );
 }
