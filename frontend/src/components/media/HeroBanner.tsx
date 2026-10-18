@@ -61,6 +61,7 @@ export function HeroBanner({ item }: HeroBannerProps) {
           </Link>
           <Link
             href={detailUrl}
+            prefetch={false}
             className="btn btn-secondary py-3 px-7 text-base font-semibold rounded-[8px] bg-white/15 hover:bg-white/25 text-white flex items-center gap-2 transition-transform hover:scale-105"
           >
             <Info className="w-5 h-5" />

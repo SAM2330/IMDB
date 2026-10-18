@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { mediaApi } from "../../../../services/api";
@@ -13,13 +14,22 @@ interface TVPageProps {
 }
 
 export const revalidate = 86400; // 24 hours ISR
+export const dynamicParams = true; // Allow on-demand ISR for series not pre-rendered at build time
+
+const getShow = cache(async (id: number) => {
+  return mediaApi.getTVDetails(id);
+});
+
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: TVPageProps): Promise<Metadata> {
   const id = parseInt(params.id, 10);
   if (isNaN(id)) return { title: "Series Not Found - StreamFlix" };
 
   try {
-    const show = await mediaApi.getTVDetails(id);
+    const show = await getShow(id);
     const title = show.name || "Series";
     const year = show.first_air_date?.slice(0, 4) ? ` (${show.first_air_date.slice(0, 4)})` : "";
     const pageTitle = `Watch ${title}${year} Series Online`;
@@ -68,7 +78,7 @@ export default async function TVDetailPage({ params }: TVPageProps) {
 
   let show;
   try {
-    show = await mediaApi.getTVDetails(id);
+    show = await getShow(id);
   } catch (e) {
     console.error("Failed to load TV details:", e);
     notFound();

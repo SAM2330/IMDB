@@ -22,7 +22,7 @@ export function MovieCard({ item, rank, onRemove, priority = false }: MovieCardP
 
   return (
     <div className="relative group min-w-[140px] md:min-w-[160px] flex-shrink-0 transition-transform duration-250 ease-out hover:scale-108 hover:z-20">
-      <Link href={detailUrl} className="block text-inherit no-underline">
+      <Link href={detailUrl} prefetch={false} className="block text-inherit no-underline">
         <div className="relative aspect-[2/3] w-full rounded-[8px] overflow-hidden bg-[#141414] shadow-md group-hover:shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-shadow">
           <Image
             src={posterUrl}

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { mediaApi } from "../../../../services/api";
@@ -13,13 +14,22 @@ interface MoviePageProps {
 }
 
 export const revalidate = 86400; // 24 hours ISR
+export const dynamicParams = true; // Allow on-demand ISR for movies not pre-rendered at build time
+
+const getMovie = cache(async (id: number) => {
+  return mediaApi.getMovieDetails(id);
+});
+
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
   const id = parseInt(params.id, 10);
   if (isNaN(id)) return { title: "Movie Not Found - StreamFlix" };
 
   try {
-    const movie = await mediaApi.getMovieDetails(id);
+    const movie = await getMovie(id);
     const title = movie.title || "Movie";
     const year = movie.release_date?.slice(0, 4) ? ` (${movie.release_date.slice(0, 4)})` : "";
     const pageTitle = `Watch ${title}${year} Online in HD`;
@@ -68,7 +78,7 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
 
   let movie;
   try {
-    movie = await mediaApi.getMovieDetails(id);
+    movie = await getMovie(id);
   } catch (e) {
     console.error("Failed to load movie details:", e);
     notFound();

@@ -15,21 +15,29 @@ function getApiBaseUrl(): string {
   return url;
 }
 
-async function fetchFromBackend<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+interface BackendFetchOptions extends RequestInit {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+}
+
+async function fetchFromBackend<T>(endpoint: string, options: BackendFetchOptions = {}): Promise<T> {
   const apiBase = getApiBaseUrl();
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
   const url = `${apiBase}${cleanEndpoint}`;
   
+  const { next, ...fetchOptions } = options;
+
   const res = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers: {
       "Accept": "application/json",
-      ...(options.headers || {})
+      ...(fetchOptions.headers || {})
     },
-    // Next.js caching options
-    next: { revalidate: 60 }
+    // Next.js caching options - default to 3600s unless explicitly overridden
+    next: next !== undefined ? next : { revalidate: 3600 }
   });
-
 
   if (!res.ok) {
     throw new Error(`API Error: ${res.status} ${res.statusText}`);
@@ -46,11 +54,13 @@ export const mediaApi = {
   getByGenre: (type: "movie" | "tv", genreId: number) =>
     fetchFromBackend<TMDBPaginatedResponse<TMDBMediaItem>>(`/media/genre/${type}/${genreId}`),
 
-  // Details
-  getMovieDetails: (id: number | string) => fetchFromBackend<TMDBMovie>(`/movie/${id}`),
-  getTVDetails: (id: number | string) => fetchFromBackend<TMDBTVShow>(`/tv/${id}`),
+  // Details - cache for 24 hours (86400s) to match page ISR and eliminate redundant serverless invocations
+  getMovieDetails: (id: number | string) =>
+    fetchFromBackend<TMDBMovie>(`/movie/${id}`, { next: { revalidate: 86400 } }),
+  getTVDetails: (id: number | string) =>
+    fetchFromBackend<TMDBTVShow>(`/tv/${id}`, { next: { revalidate: 86400 } }),
   getTVSeason: (tvId: number | string, seasonNumber: number | string) =>
-    fetchFromBackend<TMDBSeasonDetail>(`/tv/${tvId}/season/${seasonNumber}`),
+    fetchFromBackend<TMDBSeasonDetail>(`/tv/${tvId}/season/${seasonNumber}`, { next: { revalidate: 86400 } }),
 
   // Search
   search: (query: string, page = 1) =>
@@ -58,5 +68,5 @@ export const mediaApi = {
 
   // Curated catalog for sitemap
   getCuratedCatalog: () =>
-    fetchFromBackend<Array<{ id: number; title: string; media_type: "movie" | "tv"; releaseDate?: string }>>("/curated/catalog")
+    fetchFromBackend<Array<{ id: number; title: string; media_type: "movie" | "tv"; releaseDate?: string }>>("/curated/catalog", { next: { revalidate: 43200 } })
 };

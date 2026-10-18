@@ -23,6 +23,7 @@ export function Top3Cards({ items }: Top3CardsProps) {
           <Link
             key={item.id}
             href={detailUrl}
+            prefetch={false}
             className="flex gap-4 bg-[#141414] hover:bg-[#1f1f1f] p-4 rounded-[8px] border border-[#333] transition-all duration-200 hover:-translate-y-1 text-inherit no-underline group"
           >
             <div className="relative w-[110px] md:w-[120px] aspect-[2/3] flex-shrink-0 rounded-[8px] overflow-hidden bg-[#0a0a0a]">
