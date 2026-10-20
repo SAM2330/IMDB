@@ -16,7 +16,7 @@ function WatchContent() {
   const typeParam = (searchParams.get("type") as "movie" | "tv") || "movie";
   const seasonParam = parseInt(searchParams.get("season") || "1", 10);
   const episodeParam = parseInt(searchParams.get("episode") || "1", 10);
-  const serverParam = searchParams.get("server") || "vidsrc";
+  const serverParam = searchParams.get("server") || "vidfast";
   const autoPlay = searchParams.get("play") === "true" || !!searchParams.get("episode");
 
   const [item, setItem] = useState<TMDBMovie | TMDBTVShow | null>(null);

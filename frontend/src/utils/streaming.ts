@@ -5,6 +5,11 @@ export interface StreamingServer {
 }
 
 export const STREAMING_SERVERS: Record<string, StreamingServer> = {
+  vidfast: {
+    label: "VidFast",
+    movie: id => `https://vidfast.pro/movie/${id}?autoPlay=true`,
+    tv: (id, s, e) => `https://vidfast.pro/tv/${id}/${s}/${e}?autoPlay=true`
+  },
   vidsrc: {
     label: "VidSrc",
     movie: id => `https://vidsrc-embed.ru/embed/movie?tmdb=${id}&autoplay=1`,
@@ -19,11 +24,6 @@ export const STREAMING_SERVERS: Record<string, StreamingServer> = {
     label: "VidLink",
     movie: id => `https://vidlink.pro/movie/${id}?autoPlay=true`,
     tv: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}?autoPlay=true`
-  },
-  vidfast: {
-    label: "VidFast",
-    movie: id => `https://vidfast.pro/movie/${id}?autoPlay=true`,
-    tv: (id, s, e) => `https://vidfast.pro/tv/${id}/${s}/${e}?autoPlay=true`
   },
   vidsrcpm: {
     label: "VidSrc.pm",
@@ -68,6 +68,6 @@ export const STREAMING_SERVERS: Record<string, StreamingServer> = {
 };
 
 export function buildEmbedUrl(serverKey: string, type: "movie" | "tv", id: number | string, season = 1, episode = 1): string {
-  const server = STREAMING_SERVERS[serverKey] || STREAMING_SERVERS.vidsrc;
+  const server = STREAMING_SERVERS[serverKey] || STREAMING_SERVERS.vidfast;
   return type === "movie" ? server.movie(id) : server.tv(id, season, episode);
 }
