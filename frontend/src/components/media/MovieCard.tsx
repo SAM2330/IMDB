@@ -11,9 +11,10 @@ interface MovieCardProps {
   rank?: number;
   onRemove?: () => void;
   priority?: boolean;
+  rel?: string;
 }
 
-export function MovieCard({ item, rank, onRemove, priority = false }: MovieCardProps) {
+export function MovieCard({ item, rank, onRemove, priority = false, rel }: MovieCardProps) {
   const isTV = item.media_type === "tv" || ("first_air_date" in item && !("release_date" in item));
   const type = isTV ? "tv" : "movie";
   const title = item.title || item.name || "Unknown";
@@ -22,7 +23,7 @@ export function MovieCard({ item, rank, onRemove, priority = false }: MovieCardP
 
   return (
     <div className="relative group min-w-[140px] md:min-w-[160px] flex-shrink-0 transition-transform duration-250 ease-out hover:scale-108 hover:z-20">
-      <Link href={detailUrl} prefetch={false} className="block text-inherit no-underline">
+      <Link href={detailUrl} prefetch={false} rel={rel} className="block text-inherit no-underline">
         <div className="relative aspect-[2/3] w-full rounded-[8px] overflow-hidden bg-[#141414] shadow-md group-hover:shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-shadow">
           <Image
             src={posterUrl}

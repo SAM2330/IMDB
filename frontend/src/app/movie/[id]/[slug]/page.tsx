@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect, RedirectType } from "next/navigation";
 import { mediaApi } from "../../../../services/api";
 import { DetailHero } from "../../../../components/media/DetailHero";
 import { MediaCarousel } from "../../../../components/media/MediaCarousel";
@@ -21,6 +21,23 @@ const getMovie = cache(async (id: number) => {
 });
 
 export async function generateStaticParams() {
+  try {
+    const catalog = await mediaApi.getCuratedCatalog();
+    if (Array.isArray(catalog) && catalog.length > 0) {
+      const testId = catalog.find((i) => i.media_type === "movie")?.id;
+      if (testId) {
+        await mediaApi.getMovieDetails(testId);
+      }
+      return catalog
+        .filter((item) => item.media_type === "movie")
+        .map((item) => ({
+          id: String(item.id),
+          slug: slugify(item.title || "details"),
+        }));
+    }
+  } catch {
+    // Graceful fallback to on-demand generation if backend is sleeping or unreachable at build time
+  }
   return [];
 }
 
@@ -31,6 +48,19 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
   try {
     const movie = await getMovie(id);
     const title = movie.title || "Movie";
+    const canonicalSlug = slugify(title);
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et";
+    const canonicalUrl = `${siteUrl}/movie/${movie.id}/${canonicalSlug}`;
+
+    // If non-canonical slug, point canonical tag directly to canonical URL
+    if (params.slug !== canonicalSlug) {
+      return {
+        alternates: {
+          canonical: canonicalUrl,
+        },
+      };
+    }
+
     const year = movie.release_date?.slice(0, 4) ? ` (${movie.release_date.slice(0, 4)})` : "";
     const pageTitle = `Watch ${title}${year} Online in HD`;
     const description =
@@ -40,8 +70,6 @@ export async function generateMetadata({ params }: MoviePageProps): Promise<Meta
           : movie.overview
         : `Watch ${title} details, trailer, cast, rating, and streaming options on StreamFlix.`;
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streamflix.pro.et";
-    const canonicalUrl = `${siteUrl}/movie/${movie.id}/${slugify(title)}`;
     const imageUrl = movie.backdrop_path
       ? getTMDBImageUrl(movie.backdrop_path, "original")
       : getTMDBImageUrl(movie.poster_path, "w500");
@@ -88,6 +116,12 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
     notFound();
   }
 
+  // Canonical slug enforcement: 308 permanent redirect if slug is non-canonical (e.g. /watch, typos, outdated slugs)
+  const canonicalSlug = slugify(movie.title || "details");
+  if (params.slug !== canonicalSlug) {
+    redirect(`/movie/${movie.id}/${canonicalSlug}`, RedirectType.replace);
+  }
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Movie",
@@ -118,7 +152,7 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
       />
       <DetailHero item={movie} type="movie" />
       {similarMovies.length > 0 && (
-        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} />
+        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} rel="nofollow" />
       )}
     </div>
   );
