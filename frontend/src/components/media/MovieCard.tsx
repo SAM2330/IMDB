@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
-import { TMDBMediaItem } from "../../types/tmdb";
+import { TMDBMediaCard } from "../../types/tmdb";
 import { Trash2 } from "lucide-react";
 
 interface MovieCardProps {
-  item: TMDBMediaItem;
+  item: TMDBMediaCard;
   rank?: number;
   onRemove?: () => void;
   priority?: boolean;

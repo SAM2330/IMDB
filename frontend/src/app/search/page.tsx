@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { mediaApi } from "../../services/api";
 import { TMDBMediaItem } from "../../types/tmdb";
 import { MovieCard } from "../../components/media/MovieCard";
@@ -9,7 +9,6 @@ import { Search } from "lucide-react";
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const queryParam = searchParams.get("q") || "";
 
   const [searchTerm, setSearchTerm] = useState(queryParam);
@@ -35,8 +34,13 @@ function SearchContent() {
       try {
         const data = await mediaApi.search(searchTerm.trim());
         setResults(data.results || []);
-        // Update URL search query without full reload
-        router.replace(`/search?q=${encodeURIComponent(searchTerm.trim())}`, { scroll: false });
+        // Update the URL without a Next.js navigation. router.replace() would
+        // request the /search RSC payload from Vercel on every debounced query.
+        window.history.replaceState(
+          null,
+          "",
+          `/search?q=${encodeURIComponent(searchTerm.trim())}`
+        );
       } catch (err) {
         console.error("Search failed:", err);
         setError("Failed to fetch search results. Please try again.");
@@ -46,7 +50,7 @@ function SearchContent() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchTerm, router]);
+  }, [searchTerm]);
 
   return (
     <div className="pt-24 px-5 md:px-10 pb-16 min-h-screen">

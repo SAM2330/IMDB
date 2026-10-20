@@ -147,3 +147,43 @@ export interface WatchlistStoredItem {
   vote_average?: number;
   release_date?: string;
 }
+
+/**
+ * Minimal shape serialized to client card/carousel components.
+ * Keeping this small avoids shipping every TMDB field in the RSC payload.
+ */
+export type TMDBMediaCard = Pick<
+  TMDBMediaItem,
+  | "id"
+  | "title"
+  | "name"
+  | "poster_path"
+  | "media_type"
+  | "release_date"
+  | "first_air_date"
+>;
+
+/**
+ * Minimal shape serialized to the detail hero. Excludes `similar`, full
+ * credits/videos, and other fields that only the server-side page needs.
+ */
+export interface TMDBDetailItem {
+  id: number;
+  title?: string;
+  name?: string;
+  overview?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  genres?: TMDBGenre[];
+  runtime?: number;
+  number_of_seasons?: number;
+  credits?: {
+    cast: TMDBCast[];
+  };
+  videos?: {
+    results: TMDBVideo[];
+  };
+}

@@ -1,10 +1,12 @@
 import { cache } from "react";
 import { Metadata } from "next";
 import { notFound, redirect, RedirectType } from "next/navigation";
-import { mediaApi } from "../../../../services/api";
+import { BackendApiError, mediaApi } from "../../../../services/api";
 import { DetailHero } from "../../../../components/media/DetailHero";
 import { MediaCarousel } from "../../../../components/media/MediaCarousel";
 import { getTMDBImageUrl, slugify } from "../../../../utils/slug";
+import { toMediaCard } from "../../../../utils/media";
+import { TMDBDetailItem } from "../../../../types/tmdb";
 
 interface MoviePageProps {
   params: {
@@ -108,8 +110,14 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
   try {
     movie = await getMovie(id);
   } catch (e) {
+    // A real 404 from TMDB means the title does not exist. Anything else
+    // (timeout, 5xx, sleeping backend) should surface as an error instead of
+    // being cached as a permanent 404 for a valid page.
+    if (e instanceof BackendApiError && e.status === 404) {
+      notFound();
+    }
     console.error("Failed to load movie details:", e);
-    notFound();
+    throw e;
   }
 
   if (!movie) {
@@ -142,7 +150,31 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
       : {}),
   };
 
-  const similarMovies = movie.similar?.results?.map((m) => ({ ...m, media_type: "movie" as const })) || [];
+  const similarMovies =
+    movie.similar?.results?.map((m) => ({
+      ...toMediaCard(m),
+      media_type: "movie" as const,
+    })) || [];
+
+  const trailer = movie.videos?.results?.find(
+    (v) => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube"
+  );
+
+  // Only send the fields the client hero actually renders. This keeps full
+  // credits, all videos, and the similar list out of the RSC payload.
+  const heroItem: TMDBDetailItem = {
+    id: movie.id,
+    title: movie.title,
+    overview: movie.overview,
+    poster_path: movie.poster_path,
+    backdrop_path: movie.backdrop_path,
+    release_date: movie.release_date,
+    vote_average: movie.vote_average,
+    genres: movie.genres,
+    runtime: movie.runtime,
+    credits: movie.credits ? { cast: movie.credits.cast.slice(0, 5) } : undefined,
+    videos: trailer ? { results: [trailer] } : undefined,
+  };
 
   return (
     <div className="pb-16">
@@ -150,7 +182,7 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <DetailHero item={movie} type="movie" />
+      <DetailHero item={heroItem} type="movie" />
       {similarMovies.length > 0 && (
         <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} rel="nofollow" />
       )}

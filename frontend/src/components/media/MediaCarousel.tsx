@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { TMDBMediaItem } from "../../types/tmdb";
+import { TMDBMediaCard } from "../../types/tmdb";
 import { MovieCard } from "./MovieCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MediaCarouselProps {
   title: string;
-  items: TMDBMediaItem[];
+  items: TMDBMediaCard[];
   autoScrollInterval?: number;
   rel?: string;
 }

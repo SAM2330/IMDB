@@ -6,13 +6,31 @@ import {
   TMDBSeasonDetail
 } from "../types/tmdb";
 
+const PRODUCTION_API_FALLBACK = "https://streamflix-04zq.onrender.com/api";
+
 function getApiBaseUrl(): string {
-  let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  // Never fall back to localhost in a production deployment: server-side ISR
+  // would silently fetch an unreachable URL and cache empty/404 responses.
+  let url =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === "production"
+      ? PRODUCTION_API_FALLBACK
+      : "http://localhost:5000/api");
   url = url.trim().replace(/\/+$/, "");
   if (!url.endsWith("/api")) {
     url = `${url}/api`;
   }
   return url;
+}
+
+export class BackendApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "BackendApiError";
+    this.status = status;
+  }
 }
 
 interface BackendFetchOptions extends RequestInit {
@@ -29,8 +47,19 @@ async function fetchFromBackend<T>(endpoint: string, options: BackendFetchOption
   
   const { next, ...fetchOptions } = options;
 
+  // Don't abort during `next build`: a cold Render instance can take longer
+  // than the runtime timeout, and generateStaticParams should be allowed to
+  // wait for it instead of silently prebuilding an empty catalog.
+  const isBuild =
+    typeof window === "undefined" &&
+    process.env.NEXT_PHASE === "phase-production-build";
+
   const res = await fetch(url, {
     ...fetchOptions,
+    // Prevent a sleeping/failing backend from holding an ISR render open.
+    signal:
+      fetchOptions.signal ??
+      (isBuild ? undefined : AbortSignal.timeout(15_000)),
     headers: {
       "Accept": "application/json",
       ...(fetchOptions.headers || {})
@@ -40,7 +69,10 @@ async function fetchFromBackend<T>(endpoint: string, options: BackendFetchOption
   });
 
   if (!res.ok) {
-    throw new Error(`API Error: ${res.status} ${res.statusText}`);
+    throw new BackendApiError(
+      res.status,
+      `API Error: ${res.status} ${res.statusText}`
+    );
   }
 
   return res.json() as Promise<T>;

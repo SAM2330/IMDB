@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { TMDBMediaItem } from "../../types/tmdb";
+import { TMDBMediaCard } from "../../types/tmdb";
 import { getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
 
 interface Top3CardsProps {
-  items: TMDBMediaItem[];
+  items: Array<TMDBMediaCard & { overview?: string }>;
 }
 
 export function Top3Cards({ items }: Top3CardsProps) {

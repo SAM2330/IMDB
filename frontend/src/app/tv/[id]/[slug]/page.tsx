@@ -1,10 +1,12 @@
 import { cache } from "react";
 import { Metadata } from "next";
 import { notFound, redirect, RedirectType } from "next/navigation";
-import { mediaApi } from "../../../../services/api";
+import { BackendApiError, mediaApi } from "../../../../services/api";
 import { DetailHero } from "../../../../components/media/DetailHero";
 import { MediaCarousel } from "../../../../components/media/MediaCarousel";
 import { getTMDBImageUrl, slugify } from "../../../../utils/slug";
+import { toMediaCard } from "../../../../utils/media";
+import { TMDBDetailItem } from "../../../../types/tmdb";
 
 interface TVPageProps {
   params: {
@@ -108,8 +110,13 @@ export default async function TVDetailPage({ params }: TVPageProps) {
   try {
     show = await getShow(id);
   } catch (e) {
+    // Only a real 404 should become a cached not-found page. Transient
+    // backend failures should be retried by the next ISR request.
+    if (e instanceof BackendApiError && e.status === 404) {
+      notFound();
+    }
     console.error("Failed to load TV details:", e);
-    notFound();
+    throw e;
   }
 
   if (!show) {
@@ -144,7 +151,30 @@ export default async function TVDetailPage({ params }: TVPageProps) {
       : {}),
   };
 
-  const similarShows = show.similar?.results?.map((s) => ({ ...s, media_type: "tv" as const })) || [];
+  const similarShows =
+    show.similar?.results?.map((s) => ({
+      ...toMediaCard(s),
+      media_type: "tv" as const,
+    })) || [];
+
+  const trailer = show.videos?.results?.find(
+    (v) => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube"
+  );
+
+  // Keep the client payload small: no similar list, full credits, or videos.
+  const heroItem: TMDBDetailItem = {
+    id: show.id,
+    name: show.name,
+    overview: show.overview,
+    poster_path: show.poster_path,
+    backdrop_path: show.backdrop_path,
+    first_air_date: show.first_air_date,
+    vote_average: show.vote_average,
+    genres: show.genres,
+    number_of_seasons: show.number_of_seasons,
+    credits: show.credits ? { cast: show.credits.cast.slice(0, 5) } : undefined,
+    videos: trailer ? { results: [trailer] } : undefined,
+  };
 
   return (
     <div className="pb-16">
@@ -152,7 +182,7 @@ export default async function TVDetailPage({ params }: TVPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <DetailHero item={show} type="tv" />
+      <DetailHero item={heroItem} type="tv" />
       {similarShows.length > 0 && (
         <MediaCarousel title="Similar Shows" items={similarShows} autoScrollInterval={0} rel="nofollow" />
       )}

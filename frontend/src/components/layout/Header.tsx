@@ -36,7 +36,11 @@ export function Header() {
           : "bg-gradient-to-b from-black/90 to-transparent"
       }`}
     >
-      <Link href="/" className="text-2xl md:text-[26px] font-extrabold text-[#e50914] tracking-tight">
+      <Link
+        href="/"
+        prefetch={false}
+        className="text-2xl md:text-[26px] font-extrabold text-[#e50914] tracking-tight"
+      >
         Stream<span className="text-white">Flix</span>
       </Link>
 
@@ -63,6 +67,7 @@ export function Header() {
       <nav className="flex items-center gap-4 md:gap-6">
         <Link
           href="/"
+          prefetch={false}
           className={`text-sm font-medium transition-colors ${
             pathname === "/" ? "text-white font-semibold" : "text-[#b3b3b3] hover:text-white"
           }`}
@@ -71,6 +76,7 @@ export function Header() {
         </Link>
         <Link
           href="/watchlist"
+          prefetch={false}
           className={`text-sm font-medium transition-colors ${
             pathname === "/watchlist" ? "text-white font-semibold" : "text-[#b3b3b3] hover:text-white"
           }`}

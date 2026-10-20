@@ -3,13 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { TMDBMovie, TMDBTVShow } from "../../types/tmdb";
+import { TMDBDetailItem } from "../../types/tmdb";
 import { getTMDBImageUrl, getWatchUrl } from "../../utils/slug";
 import { useWatchlist } from "../../hooks/useWatchlist";
 import { Play, Plus, Check, Film, Star, X } from "lucide-react";
 
 interface DetailHeroProps {
-  item: TMDBMovie | TMDBTVShow;
+  item: TMDBDetailItem;
   type: "movie" | "tv";
 }
 

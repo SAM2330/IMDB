@@ -4,8 +4,9 @@ import { Top3Cards } from "../components/media/Top3Cards";
 import { MovieCard } from "../components/media/MovieCard";
 import { MediaCarousel } from "../components/media/MediaCarousel";
 import { TMDBMediaItem } from "../types/tmdb";
+import { toMediaCard, toMediaCards } from "../utils/media";
 
-export const revalidate = 3600; // 1-hour ISR: caches homepage at Edge CDN and refreshes periodically
+export const revalidate = 21600; // 6-hour ISR: trending data changes slowly and this cuts ISR/Render wakeups
 
 export default async function HomePage() {
   let trending: TMDBMediaItem[] = [];
@@ -73,28 +74,35 @@ export default async function HomePage() {
         </h2>
 
         {/* Top 3 Large Cards */}
-        {trending.length > 0 && <Top3Cards items={trending.slice(0, 3)} />}
+        {trending.length > 0 && (
+          <Top3Cards
+            items={trending.slice(0, 3).map((item) => ({
+              ...toMediaCard(item),
+              overview: item.overview,
+            }))}
+          />
+        )}
 
         {/* Ranks 4 to 10 Grid */}
         {top10Rest.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {top10Rest.map((item, idx) => (
-              <MovieCard key={item.id} item={item} rank={idx + 4} />
+              <MovieCard key={item.id} item={toMediaCard(item)} rank={idx + 4} />
             ))}
           </div>
         )}
       </section>
 
       {/* Media Carousels */}
-      <MediaCarousel title="Top Picks For You" items={topPicks} />
-      <MediaCarousel title="Fan Favorites" items={fanFavorites} />
-      <MediaCarousel title="Action Movies" items={actionMovies} />
-      <MediaCarousel title="Drama Series" items={dramaTV} />
-      <MediaCarousel title="Comedy Movies" items={comedyMovies} />
-      <MediaCarousel title="Thriller Movies" items={thrillerMovies} />
-      <MediaCarousel title="Sci-Fi Series" items={scifiTV} />
-      <MediaCarousel title="Crime Series" items={crimeTV} />
-      <MediaCarousel title="Mystery Series" items={mysteryTV} />
+      <MediaCarousel title="Top Picks For You" items={toMediaCards(topPicks)} />
+      <MediaCarousel title="Fan Favorites" items={toMediaCards(fanFavorites)} />
+      <MediaCarousel title="Action Movies" items={toMediaCards(actionMovies)} />
+      <MediaCarousel title="Drama Series" items={toMediaCards(dramaTV)} />
+      <MediaCarousel title="Comedy Movies" items={toMediaCards(comedyMovies)} />
+      <MediaCarousel title="Thriller Movies" items={toMediaCards(thrillerMovies)} />
+      <MediaCarousel title="Sci-Fi Series" items={toMediaCards(scifiTV)} />
+      <MediaCarousel title="Crime Series" items={toMediaCards(crimeTV)} />
+      <MediaCarousel title="Mystery Series" items={toMediaCards(mysteryTV)} />
 
       {/* SEO Content Section */}
       <section className="max-w-6xl mx-auto px-5 md:px-10 mt-14 pt-10 border-t border-white/10 text-[#888] text-sm leading-relaxed space-y-4">
