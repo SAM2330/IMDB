@@ -110,9 +110,9 @@ export default async function HomePage() {
 
       {/* SEO Content Section */}
       <section className="max-w-6xl mx-auto px-5 md:px-10 mt-14 pt-10 border-t border-white/10 text-[#888] text-sm leading-relaxed space-y-4">
-        <h2 className="text-lg md:text-xl font-semibold text-[#e5e5e5]">
-          Stream Movies and TV Series Online on StreamFlix
-        </h2>
+        <h1 className="text-xl md:text-2xl font-bold text-white">
+          StreamFlix - Watch Movies and TV Shows Online
+        </h1>
         <p>
           StreamFlix is your online destination for discovering and streaming trending movies, critically acclaimed TV shows, and top-rated series in high definition. Explore our curated collections spanning action blockbusters, thrilling crime dramas, laugh-out-loud comedies, and immersive sci-fi adventures. With comprehensive details including cast information, official trailers, release dates, and community ratings powered by TMDB, finding your next watch has never been easier.
         </p>

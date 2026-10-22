@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { TMDBMediaItem } from "../../types/tmdb";
-import { getMediaDetailUrl, getTMDBImageUrl, getWatchUrl } from "../../utils/slug";
+import { getPreferredDetailUrl, getTMDBImageUrl, getWatchUrl } from "../../utils/slug";
 import { Play, Info } from "lucide-react";
 
 interface HeroBannerProps {
@@ -26,7 +26,7 @@ export function HeroBanner({ item }: HeroBannerProps) {
   const type = isTV ? "tv" : "movie";
   const title = item.title || item.name || "Featured Title";
   const backdropUrl = getTMDBImageUrl(item.backdrop_path, "original");
-  const detailUrl = getMediaDetailUrl(item.id, type, title);
+  const detailUrl = getPreferredDetailUrl(item.id, type, title);
   const watchUrl = getWatchUrl(item.id, type);
 
   return (
@@ -44,9 +44,9 @@ export function HeroBanner({ item }: HeroBannerProps) {
 
       {/* Hero Content */}
       <div className="relative z-20 max-w-[600px] pt-36 md:pt-40 pb-16 px-5 md:px-10 flex flex-col justify-end h-full">
-        <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4 drop-shadow-md">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4 drop-shadow-md">
           {title}
-        </h1>
+        </h2>
         <p className="text-sm md:text-base text-[#b3b3b3] mb-6 line-clamp-3 leading-relaxed drop-shadow">
           {item.overview || "Stream this title now on StreamFlix."}
         </p>

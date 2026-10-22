@@ -1,3 +1,9 @@
+import { PREBUILD_ITEMS } from "../generated/prebuild-manifest";
+
+const PREBUILT_KEYS = new Set(
+  PREBUILD_ITEMS.map((item) => `${item.media_type}:${item.id}`)
+);
+
 export function slugify(text: string): string {
   if (!text) return "watch";
   return text
@@ -15,12 +21,29 @@ export function getMediaDetailUrl(id: number, type: "movie" | "tv", title?: stri
 }
 
 /**
- * Long-tail titles are rendered by the static `/title` client shell. Search,
- * watchlist, and similar-title links use this so they never depend on an
- * on-demand ISR page that was not prebuilt.
+ * Long-tail titles are rendered by the static `/title` client shell. This is
+ * the fallback for titles that were not included in the build-time manifest.
  */
 export function getClientDetailUrl(id: number, type: "movie" | "tv"): string {
   return `/title?type=${type}&id=${id}`;
+}
+
+export function isPrebuiltTitle(id: number, type: "movie" | "tv"): boolean {
+  return PREBUILT_KEYS.has(`${type}:${id}`);
+}
+
+/**
+ * Prefer the canonical static detail page when it exists so internal links pass
+ * crawl equity to indexable pages. Long-tail titles fall back to `/title`.
+ */
+export function getPreferredDetailUrl(
+  id: number,
+  type: "movie" | "tv",
+  title?: string
+): string {
+  return isPrebuiltTitle(id, type)
+    ? getMediaDetailUrl(id, type, title)
+    : getClientDetailUrl(id, type);
 }
 
 export function getWatchUrl(id: number, type: "movie" | "tv", season?: number, episode?: number): string {

@@ -10,10 +10,9 @@ interface MediaCarouselProps {
   items: TMDBMediaCard[];
   autoScrollInterval?: number;
   rel?: string;
-  clientDetail?: boolean;
 }
 
-export function MediaCarousel({ title, items, autoScrollInterval = 6000, rel, clientDetail = false }: MediaCarouselProps) {
+export function MediaCarousel({ title, items, autoScrollInterval = 6000, rel }: MediaCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,7 +59,7 @@ export function MediaCarousel({ title, items, autoScrollInterval = 6000, rel, cl
         >
           {items.map((item) => (
             <div key={`${item.id}-${item.media_type || 'item'}`} className="w-[150px] md:w-[180px] flex-shrink-0">
-              <MovieCard item={item} rel={rel} clientDetail={clientDetail} />
+              <MovieCard item={item} rel={rel} />
             </div>
           ))}
         </div>

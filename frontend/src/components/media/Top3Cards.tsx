@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { TMDBMediaCard } from "../../types/tmdb";
-import { getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
+import { getPreferredDetailUrl, getTMDBImageUrl } from "../../utils/slug";
 
 interface Top3CardsProps {
   items: Array<TMDBMediaCard & { overview?: string }>;
@@ -16,7 +16,7 @@ export function Top3Cards({ items }: Top3CardsProps) {
         const isTV = item.media_type === "tv" || ("first_air_date" in item && !("release_date" in item));
         const type = isTV ? "tv" : "movie";
         const title = item.title || item.name || "Unknown";
-        const detailUrl = getMediaDetailUrl(item.id, type, title);
+        const detailUrl = getPreferredDetailUrl(item.id, type, title);
         const posterUrl = getTMDBImageUrl(item.poster_path, "w500");
 
         return (

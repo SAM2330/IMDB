@@ -177,7 +177,7 @@ export default async function TVDetailPage({ params }: TVPageProps) {
       <MediaCache type="tv" item={heroItem} />
       <DetailHero item={heroItem} type="tv" />
       {similarShows.length > 0 && (
-        <MediaCarousel title="Similar Shows" items={similarShows} autoScrollInterval={0} rel="nofollow" clientDetail />
+        <MediaCarousel title="Similar Shows" items={similarShows} autoScrollInterval={0} />
       )}
     </div>
   );

@@ -89,8 +89,6 @@ export function TitleContent() {
           title={type === "tv" ? "Similar Shows" : "Similar Movies"}
           items={similar}
           autoScrollInterval={0}
-          rel="nofollow"
-          clientDetail
         />
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { getClientDetailUrl, getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
+import { getPreferredDetailUrl, getTMDBImageUrl, isPrebuiltTitle } from "../../utils/slug";
 import { TMDBMediaCard } from "../../types/tmdb";
 import { Trash2 } from "lucide-react";
 
@@ -12,23 +12,21 @@ interface MovieCardProps {
   onRemove?: () => void;
   priority?: boolean;
   rel?: string;
-  clientDetail?: boolean;
 }
 
-export function MovieCard({ item, rank, onRemove, priority = false, rel, clientDetail = false }: MovieCardProps) {
+export function MovieCard({ item, rank, onRemove, priority = false, rel }: MovieCardProps) {
   const isTV = item.media_type
     ? item.media_type === "tv"
     : item.first_air_date !== undefined || (item.name !== undefined && item.title === undefined);
   const type = isTV ? "tv" : "movie";
   const title = item.title || item.name || "Unknown";
-  const detailUrl = clientDetail
-    ? getClientDetailUrl(item.id, type)
-    : getMediaDetailUrl(item.id, type, title);
+  const detailUrl = getPreferredDetailUrl(item.id, type, title);
+  const linkRel = rel ?? (isPrebuiltTitle(item.id, type) ? undefined : "nofollow");
   const posterUrl = getTMDBImageUrl(item.poster_path, "w500");
 
   return (
     <div className="relative group min-w-[140px] md:min-w-[160px] flex-shrink-0 transition-transform duration-250 ease-out hover:scale-108 hover:z-20">
-      <Link href={detailUrl} prefetch={false} rel={rel} className="block text-inherit no-underline">
+      <Link href={detailUrl} prefetch={false} rel={linkRel} className="block text-inherit no-underline">
         <div className="relative aspect-[2/3] w-full rounded-[8px] overflow-hidden bg-[#141414] shadow-md group-hover:shadow-[0_8px_32px_rgba(0,0,0,0.6)] transition-shadow">
           <Image
             src={posterUrl}

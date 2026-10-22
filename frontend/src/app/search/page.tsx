@@ -103,7 +103,7 @@ function SearchContent() {
         ) : results.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {results.map((item) => (
-              <MovieCard key={`${item.id}-${item.media_type}`} item={item} clientDetail />
+              <MovieCard key={`${item.id}-${item.media_type}`} item={item} />
             ))}
           </div>
         ) : isQueryTooShort ? (

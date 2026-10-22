@@ -176,7 +176,7 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
       <MediaCache type="movie" item={heroItem} />
       <DetailHero item={heroItem} type="movie" />
       {similarMovies.length > 0 && (
-        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} rel="nofollow" clientDetail />
+        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} />
       )}
     </div>
   );
