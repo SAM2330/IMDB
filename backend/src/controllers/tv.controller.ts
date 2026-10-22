@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { TMDBService } from "../services/tmdb.service.js";
+import { toDetailView, toWatchView } from "../utils/mediaView.js";
 
 export class TVController {
-  // GET /api/tv/:id
+  // GET /api/tv/:id?view=watch|detail
   static async getDetails(req: Request, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id, 10);
@@ -11,6 +12,14 @@ export class TVController {
       }
 
       const show = await TMDBService.getTVDetails(id);
+
+      if (req.query.view === "watch") {
+        return res.json(toWatchView(show, "tv"));
+      }
+      if (req.query.view === "detail") {
+        return res.json(toDetailView(show, "tv"));
+      }
+
       res.json(show);
     } catch (error) {
       next(error);

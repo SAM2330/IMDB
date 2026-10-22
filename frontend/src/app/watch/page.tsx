@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { mediaApi } from "../../services/api";
-import { TMDBMovie, TMDBTVShow, TMDBEpisode, TMDBSeasonSummary } from "../../types/tmdb";
+import { TMDBWatchItem, TMDBEpisode, TMDBSeasonSummary } from "../../types/tmdb";
 import { STREAMING_SERVERS } from "../../utils/streaming";
 import { getTMDBImageUrl } from "../../utils/slug";
 import { PopupPlayer } from "../../components/player/PopupPlayer";
@@ -19,7 +19,7 @@ function WatchContent() {
   const serverParam = searchParams.get("server") || "vidfast";
   const autoPlay = searchParams.get("play") === "true" || !!searchParams.get("episode");
 
-  const [item, setItem] = useState<TMDBMovie | TMDBTVShow | null>(null);
+  const [item, setItem] = useState<TMDBWatchItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [server, setServer] = useState(serverParam);
   const [currentSeason, setCurrentSeason] = useState(seasonParam);
@@ -31,43 +31,54 @@ function WatchContent() {
 
   useEffect(() => {
     if (!idParam) return;
+
+    const controller = new AbortController();
     const fetchMedia = async () => {
       setLoading(true);
       try {
+        const data = await mediaApi.getWatchDetails(typeParam, idParam, controller.signal);
+        if (controller.signal.aborted) return;
+
+        setItem(data);
         if (typeParam === "tv") {
-          const show = await mediaApi.getTVDetails(idParam);
-          setItem(show);
-          const validSeasons = show.seasons?.filter((s) => s.season_number > 0) || [];
+          const validSeasons = data.seasons?.filter((s) => s.season_number > 0) || [];
           setSeasons(validSeasons);
-        } else {
-          const movie = await mediaApi.getMovieDetails(idParam);
-          setItem(movie);
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Error loading watch media:", err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchMedia();
+    return () => controller.abort();
   }, [idParam, typeParam]);
 
   useEffect(() => {
     if (typeParam === "tv" && idParam && currentSeason > 0) {
+      const controller = new AbortController();
       const fetchEpisodes = async () => {
         setEpisodesLoading(true);
         try {
-          const data = await mediaApi.getTVSeason(idParam, currentSeason);
+          const data = await mediaApi.getTVSeason(idParam, currentSeason, controller.signal);
+          if (controller.signal.aborted) return;
           setEpisodes(data.episodes || []);
         } catch (err) {
+          if (controller.signal.aborted) return;
           console.error("Error loading episodes:", err);
         } finally {
-          setEpisodesLoading(false);
+          if (!controller.signal.aborted) {
+            setEpisodesLoading(false);
+          }
         }
       };
 
       fetchEpisodes();
+      return () => controller.abort();
     }
   }, [idParam, typeParam, currentSeason]);
 

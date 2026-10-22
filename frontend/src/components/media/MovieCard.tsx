@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
+import { getClientDetailUrl, getMediaDetailUrl, getTMDBImageUrl } from "../../utils/slug";
 import { TMDBMediaCard } from "../../types/tmdb";
 import { Trash2 } from "lucide-react";
 
@@ -12,13 +12,18 @@ interface MovieCardProps {
   onRemove?: () => void;
   priority?: boolean;
   rel?: string;
+  clientDetail?: boolean;
 }
 
-export function MovieCard({ item, rank, onRemove, priority = false, rel }: MovieCardProps) {
-  const isTV = item.media_type === "tv" || ("first_air_date" in item && !("release_date" in item));
+export function MovieCard({ item, rank, onRemove, priority = false, rel, clientDetail = false }: MovieCardProps) {
+  const isTV = item.media_type
+    ? item.media_type === "tv"
+    : item.first_air_date !== undefined || (item.name !== undefined && item.title === undefined);
   const type = isTV ? "tv" : "movie";
   const title = item.title || item.name || "Unknown";
-  const detailUrl = getMediaDetailUrl(item.id, type, title);
+  const detailUrl = clientDetail
+    ? getClientDetailUrl(item.id, type)
+    : getMediaDetailUrl(item.id, type, title);
   const posterUrl = getTMDBImageUrl(item.poster_path, "w500");
 
   return (

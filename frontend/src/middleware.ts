@@ -10,7 +10,9 @@ export function middleware(request: NextRequest) {
     const type = searchParams.get("type") === "tv" ? "tv" : "movie";
 
     if (id) {
-      const targetUrl = new URL(`/${type}/${id}/watch`, request.url);
+      const targetUrl = new URL("/title", request.url);
+      targetUrl.searchParams.set("type", type);
+      targetUrl.searchParams.set("id", id);
       return NextResponse.redirect(targetUrl, 301);
     }
     return NextResponse.redirect(new URL("/", request.url), 301);

@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { mediaApi } from "../services/api";
+import { getPrebuildItems } from "../utils/prebuild";
 import { slugify } from "../utils/slug";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -15,13 +15,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const curatedCatalog = await mediaApi.getCuratedCatalog();
+    const prebuildItems = await getPrebuildItems();
 
-    if (Array.isArray(curatedCatalog)) {
+    if (Array.isArray(prebuildItems)) {
       // Omit lastModified for media items: Google Search Console rejects release dates
       // (like 1962 or pre-epoch dates) as invalid webpage lastmod dates.
       // Sitemaps.org and Google recommend omitting lastmod when a true webpage modification date is unavailable.
-      const mediaEntries: MetadataRoute.Sitemap = curatedCatalog.map((item) => {
+      const mediaEntries: MetadataRoute.Sitemap = prebuildItems.map((item) => {
         const slug = slugify(item.title || "details");
         const url = `${siteUrl}/${item.media_type}/${item.id}/${slug}`;
         return {

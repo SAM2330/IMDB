@@ -18,6 +18,16 @@ export const cacheMiddleware = (durationSeconds: number = env.CACHE_DEFAULT_TTL)
     const key = `__express__${req.originalUrl || req.url}`;
     const cachedResponse = cache.get(key);
 
+    // Let browsers and any upstream CDN cache public GET responses too. This
+    // removes repeat traffic from Render's bandwidth bill.
+    res.setHeader(
+      "Cache-Control",
+      `public, max-age=${durationSeconds}, stale-while-revalidate=${Math.min(
+        durationSeconds,
+        3600
+      )}`
+    );
+
     if (cachedResponse) {
       res.setHeader("X-Cache", "HIT");
       return res.json(cachedResponse);

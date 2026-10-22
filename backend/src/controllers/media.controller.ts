@@ -6,7 +6,8 @@ export class MediaController {
   static async getTrending(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await TMDBService.getTrendingAllWeek();
-      res.json(data);
+      const results = (data.results || []).filter((item) => item.media_type !== "person");
+      res.json({ ...data, results });
     } catch (error) {
       next(error);
     }
@@ -27,8 +28,10 @@ export class MediaController {
     try {
       const data = await TMDBService.getTrendingAllWeek();
       const results = data?.results || [];
-      // Filter items with vote_count > 500 matching the original logic
-      const fanFavorites = results.filter(item => (item.vote_count || 0) > 500);
+      // Filter people and low-vote items, matching the original logic.
+      const fanFavorites = results.filter(
+        (item) => item.media_type !== "person" && (item.vote_count || 0) > 500
+      );
       res.json({
         ...data,
         results: fanFavorites
@@ -104,6 +107,7 @@ export class MediaController {
       const itemsMap = new Map<string, { id: number; title: string; media_type: "movie" | "tv"; releaseDate?: string }>();
 
       trending.results.forEach(item => {
+        if (item.media_type === "person") return;
         const type = item.media_type === "tv" || ("name" in item && !("title" in item)) ? "tv" : "movie";
         const title = ("title" in item ? item.title : item.name) || "";
         const date = ("release_date" in item ? item.release_date : item.first_air_date) || "";

@@ -180,10 +180,39 @@ export interface TMDBDetailItem {
   genres?: TMDBGenre[];
   runtime?: number;
   number_of_seasons?: number;
+  seasons?: TMDBSeasonSummary[];
   credits?: {
     cast: TMDBCast[];
   };
   videos?: {
     results: TMDBVideo[];
+  };
+}
+
+/**
+ * Lean shape returned by `?view=watch`. Only the fields the watch page needs,
+ * so opening a player does not download the full TMDB detail payload.
+ */
+export interface TMDBWatchItem {
+  id: number;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  runtime?: number;
+  number_of_seasons?: number;
+  seasons?: TMDBSeasonSummary[];
+}
+
+/**
+ * Lean shape returned by `?view=detail`, used by the client-rendered
+ * `/title` shell for long-tail titles.
+ */
+export interface TMDBDetailView extends TMDBDetailItem {
+  similar?: {
+    results: TMDBMediaCard[];
   };
 }

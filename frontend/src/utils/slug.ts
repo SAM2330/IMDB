@@ -14,6 +14,15 @@ export function getMediaDetailUrl(id: number, type: "movie" | "tv", title?: stri
   return `/${type}/${id}/${slug}`;
 }
 
+/**
+ * Long-tail titles are rendered by the static `/title` client shell. Search,
+ * watchlist, and similar-title links use this so they never depend on an
+ * on-demand ISR page that was not prebuilt.
+ */
+export function getClientDetailUrl(id: number, type: "movie" | "tv"): string {
+  return `/title?type=${type}&id=${id}`;
+}
+
 export function getWatchUrl(id: number, type: "movie" | "tv", season?: number, episode?: number): string {
   if (type === "tv") {
     if (season !== undefined && episode !== undefined) {

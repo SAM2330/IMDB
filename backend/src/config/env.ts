@@ -9,7 +9,9 @@ const envSchema = z.object({
   TMDB_API_KEY: z.string().min(1, "TMDB_API_KEY is required"),
   FRONTEND_URL: z.string().default("http://localhost:3000"),
   DATABASE_URL: z.string().optional(),
-  CACHE_DEFAULT_TTL: z.string().default("3600").transform(val => parseInt(val, 10))
+  CACHE_DEFAULT_TTL: z.string().default("3600").transform(val => parseInt(val, 10)),
+  API_SECRET: z.string().optional(),
+  ALLOWED_ORIGINS: z.string().optional()
 });
 
 const parsed = envSchema.safeParse(process.env);

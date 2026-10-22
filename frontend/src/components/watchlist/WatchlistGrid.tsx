@@ -30,6 +30,7 @@ export function WatchlistGrid() {
         <MovieCard
           key={`${item.id}-${index}`}
           item={item}
+          clientDetail
           onRemove={() => removeFromWatchlist(index)}
         />
       ))}

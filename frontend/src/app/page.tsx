@@ -6,7 +6,7 @@ import { MediaCarousel } from "../components/media/MediaCarousel";
 import { TMDBMediaItem } from "../types/tmdb";
 import { toMediaCard, toMediaCards } from "../utils/media";
 
-export const revalidate = 21600; // 6-hour ISR: trending data changes slowly and this cuts ISR/Render wakeups
+export const revalidate = false; // Static at build time: eliminates ISR writes; deploy to refresh
 
 export default async function HomePage() {
   let trending: TMDBMediaItem[] = [];
@@ -57,6 +57,10 @@ export default async function HomePage() {
     mysteryTV = mysteryData.results || [];
   } catch (e) {
     console.error("Error fetching homepage media data:", e);
+  }
+
+  if (trending.length === 0 && topPicks.length === 0 && fanFavorites.length === 0) {
+    throw new Error("Homepage data unavailable; refusing to pre-render an empty page.");
   }
 
   const featured = trending.find((item) => item.backdrop_path) || trending[0] || null;

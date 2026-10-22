@@ -3,8 +3,10 @@ import { Metadata } from "next";
 import { notFound, redirect, RedirectType } from "next/navigation";
 import { BackendApiError, mediaApi } from "../../../../services/api";
 import { DetailHero } from "../../../../components/media/DetailHero";
+import { MediaCache } from "../../../../components/media/MediaCache";
 import { MediaCarousel } from "../../../../components/media/MediaCarousel";
 import { getTMDBImageUrl, slugify } from "../../../../utils/slug";
+import { getPrebuildItems } from "../../../../utils/prebuild";
 import { toMediaCard } from "../../../../utils/media";
 import { TMDBDetailItem } from "../../../../types/tmdb";
 
@@ -15,32 +17,21 @@ interface MoviePageProps {
   };
 }
 
-export const revalidate = 86400; // 24 hours ISR
-export const dynamicParams = true; // Allow on-demand ISR for movies not pre-rendered at build time
+export const revalidate = false; // Build-time static only: no ISR write quota usage
+export const dynamicParams = false; // Long-tail titles are served by the /title client shell
 
 const getMovie = cache(async (id: number) => {
   return mediaApi.getMovieDetails(id);
 });
 
 export async function generateStaticParams() {
-  try {
-    const catalog = await mediaApi.getCuratedCatalog();
-    if (Array.isArray(catalog) && catalog.length > 0) {
-      const testId = catalog.find((i) => i.media_type === "movie")?.id;
-      if (testId) {
-        await mediaApi.getMovieDetails(testId);
-      }
-      return catalog
-        .filter((item) => item.media_type === "movie")
-        .map((item) => ({
-          id: String(item.id),
-          slug: slugify(item.title || "details"),
-        }));
-    }
-  } catch {
-    // Graceful fallback to on-demand generation if backend is sleeping or unreachable at build time
-  }
-  return [];
+  const items = await getPrebuildItems();
+  return items
+    .filter((item) => item.media_type === "movie")
+    .map((item) => ({
+      id: String(item.id),
+      slug: slugify(item.title || "details"),
+    }));
 }
 
 export async function generateMetadata({ params }: MoviePageProps): Promise<Metadata> {
@@ -182,9 +173,10 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <MediaCache type="movie" item={heroItem} />
       <DetailHero item={heroItem} type="movie" />
       {similarMovies.length > 0 && (
-        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} rel="nofollow" />
+        <MediaCarousel title="Similar Movies" items={similarMovies} autoScrollInterval={0} rel="nofollow" clientDetail />
       )}
     </div>
   );

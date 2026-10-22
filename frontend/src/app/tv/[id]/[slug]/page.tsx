@@ -3,8 +3,10 @@ import { Metadata } from "next";
 import { notFound, redirect, RedirectType } from "next/navigation";
 import { BackendApiError, mediaApi } from "../../../../services/api";
 import { DetailHero } from "../../../../components/media/DetailHero";
+import { MediaCache } from "../../../../components/media/MediaCache";
 import { MediaCarousel } from "../../../../components/media/MediaCarousel";
 import { getTMDBImageUrl, slugify } from "../../../../utils/slug";
+import { getPrebuildItems } from "../../../../utils/prebuild";
 import { toMediaCard } from "../../../../utils/media";
 import { TMDBDetailItem } from "../../../../types/tmdb";
 
@@ -15,32 +17,21 @@ interface TVPageProps {
   };
 }
 
-export const revalidate = 86400; // 24 hours ISR
-export const dynamicParams = true; // Allow on-demand ISR for series not pre-rendered at build time
+export const revalidate = false; // Build-time static only: no ISR write quota usage
+export const dynamicParams = false; // Long-tail series are served by the /title client shell
 
 const getShow = cache(async (id: number) => {
   return mediaApi.getTVDetails(id);
 });
 
 export async function generateStaticParams() {
-  try {
-    const catalog = await mediaApi.getCuratedCatalog();
-    if (Array.isArray(catalog) && catalog.length > 0) {
-      const testId = catalog.find((i) => i.media_type === "tv")?.id;
-      if (testId) {
-        await mediaApi.getTVDetails(testId);
-      }
-      return catalog
-        .filter((item) => item.media_type === "tv")
-        .map((item) => ({
-          id: String(item.id),
-          slug: slugify(item.title || "details"),
-        }));
-    }
-  } catch {
-    // Graceful fallback to on-demand generation if backend is sleeping or unreachable at build time
-  }
-  return [];
+  const items = await getPrebuildItems();
+  return items
+    .filter((item) => item.media_type === "tv")
+    .map((item) => ({
+      id: String(item.id),
+      slug: slugify(item.title || "details"),
+    }));
 }
 
 export async function generateMetadata({ params }: TVPageProps): Promise<Metadata> {
@@ -172,6 +163,7 @@ export default async function TVDetailPage({ params }: TVPageProps) {
     vote_average: show.vote_average,
     genres: show.genres,
     number_of_seasons: show.number_of_seasons,
+    seasons: show.seasons?.filter((s) => s.season_number > 0),
     credits: show.credits ? { cast: show.credits.cast.slice(0, 5) } : undefined,
     videos: trailer ? { results: [trailer] } : undefined,
   };
@@ -182,9 +174,10 @@ export default async function TVDetailPage({ params }: TVPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <MediaCache type="tv" item={heroItem} />
       <DetailHero item={heroItem} type="tv" />
       {similarShows.length > 0 && (
-        <MediaCarousel title="Similar Shows" items={similarShows} autoScrollInterval={0} rel="nofollow" />
+        <MediaCarousel title="Similar Shows" items={similarShows} autoScrollInterval={0} rel="nofollow" clientDetail />
       )}
     </div>
   );

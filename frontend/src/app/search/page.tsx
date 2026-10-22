@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { mediaApi } from "../../services/api";
 import { TMDBMediaItem } from "../../types/tmdb";
 import { MovieCard } from "../../components/media/MovieCard";
 import { Search } from "lucide-react";
+
+const MIN_QUERY_LENGTH = 2;
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -15,42 +17,59 @@ function SearchContent() {
   const [results, setResults] = useState<TMDBMediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Sync search input when URL query changes
   useEffect(() => {
     setSearchTerm(queryParam);
   }, [queryParam]);
 
-  // Debounced search trigger
+  // Debounced search trigger. A 700ms delay, a 2-character minimum, and
+  // request cancellation prevent a request per keystroke from reaching Render.
   useEffect(() => {
-    if (!searchTerm.trim()) {
+    const query = searchTerm.trim();
+
+    if (query.length < MIN_QUERY_LENGTH) {
+      abortRef.current?.abort();
+      abortRef.current = null;
       setResults([]);
+      setLoading(false);
+      setError(null);
       return;
     }
 
+    setError(null);
+    const controller = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = controller;
+
     const timer = setTimeout(async () => {
       setLoading(true);
-      setError(null);
       try {
-        const data = await mediaApi.search(searchTerm.trim());
+        const data = await mediaApi.search(query, 1, controller.signal);
         setResults(data.results || []);
         // Update the URL without a Next.js navigation. router.replace() would
         // request the /search RSC payload from Vercel on every debounced query.
-        window.history.replaceState(
-          null,
-          "",
-          `/search?q=${encodeURIComponent(searchTerm.trim())}`
-        );
+        window.history.replaceState(null, "", `/search?q=${encodeURIComponent(query)}`);
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Search failed:", err);
         setError("Failed to fetch search results. Please try again.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
-    }, 400);
+    }, 700);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchTerm]);
+
+  const trimmedTerm = searchTerm.trim();
+  const isQueryTooShort = trimmedTerm.length > 0 && trimmedTerm.length < MIN_QUERY_LENGTH;
 
   return (
     <div className="pt-24 px-5 md:px-10 pb-16 min-h-screen">
@@ -84,10 +103,14 @@ function SearchContent() {
         ) : results.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {results.map((item) => (
-              <MovieCard key={`${item.id}-${item.media_type}`} item={item} />
+              <MovieCard key={`${item.id}-${item.media_type}`} item={item} clientDetail />
             ))}
           </div>
-        ) : searchTerm.trim() ? (
+        ) : isQueryTooShort ? (
+          <div className="py-12 text-[#b3b3b3]">
+            <p className="text-lg">Type at least {MIN_QUERY_LENGTH} characters to search.</p>
+          </div>
+        ) : trimmedTerm ? (
           <div className="py-12 text-[#b3b3b3]">
             <p className="text-lg">No results found for &quot;{searchTerm}&quot;.</p>
           </div>
