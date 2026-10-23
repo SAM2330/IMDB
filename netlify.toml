@@ -6,5 +6,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Consolidate the www alias into the canonical apex URL.
+[[redirects]]
+  from = "https://www.streamflix.pro.et/*"
+  to = "https://streamflix.pro.et/:splat"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"

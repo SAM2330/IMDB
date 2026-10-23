@@ -8,7 +8,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/watch", "/search", "/watchlist", "/title", "/api/"],
+        // /title serves noindex, nofollow and is the redirect target for
+        // long-tail/old detail URLs. Let crawlers fetch it so they can see
+        // the noindex instead of reporting a robots-blocked redirect target.
+        disallow: ["/watch", "/search", "/watchlist", "/api/"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
